@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 구매표(연금)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; }
+        h2 { color: #1a73e8; text-align: center; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #e0e0e0; padding: 15px; text-align: center; transition: background-color 0.3s; }
+        th { background-color: #1a73e8; color: white; font-weight: 600; }
+
+
+        .bought { background-color: #ffffff; }
+        .not-bought { background-color: #ffebee; }
+
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; vertical-align: middle; }
+        strong { font-size: 1.1em; color: #333; }
+
+        .info-text { text-align: center; color: #444; margin-bottom: 10px; font-weight: 500; }
+        .status-legend { font-weight: bold; }
+        .check-emoji { color: #2e7d32; }
+        .uncheck-emoji { color: #c62828; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>구매 목록(연금)</h2>
+    <p class="info-text">
+        <span class="status-legend">☑️ 구매</span> |
+        <span class="status-legend">⬜ 미 구매</span>
+    </p>
+
+
+    <div id="market-table-container">데이터를 불러오는 중입니다...</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyB027HJi2Ie4dLZ1btQFZOSvv2uW8DBSFA",
+        authDomain: "threebin-market.firebaseapp.com",
+        databaseURL: "https://threebin-market-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "threebin-market",
+        storageBucket: "threebin-market.firebasestorage.app",
+        messagingSenderId: "595052539400",
+        appId: "1:595052539400:web:0a50d75439a01ec7366bbd"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+//인원 수정 여따함
+    const alchemists = ["콩누나", "바다", "아온", "이랑", "핀구"];
+    const seafoods = ["소라", "키조개", "멍게", "해삼"];
+
+    const marketRef = ref(db, 'market_status');
+    onValue(marketRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        renderTable(data);
+    });
+
+    function renderTable(data) {
+        let html = `<table>
+            <thead>
+                <tr>
+                    <th>연금</th>
+                    ${seafoods.map(s => `<th>${s}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>`;
+
+        alchemists.forEach(name => {
+            html += `<tr><td><strong>${name}</strong></td>`;
+            seafoods.forEach(item => {
+                const isChecked = (data[name] && data[name][item]) === true;
+                const bgColorClass = isChecked ? 'bought' : 'not-bought';
+
+                html += `
+                    <td class="${bgColorClass}">
+                        <input type="checkbox"
+                            ${isChecked ? 'checked' : ''}
+                            onchange="updateDatabase('${name}', '${item}', this.checked)">
+                    </td>`;
+            });
+            html += `</tr>`;
+        });
+
+        html += `</tbody></table>`;
+        document.getElementById('market-table-container').innerHTML = html;
+    }
+
+    window.updateDatabase = (name, item, status) => {
+        const updates = {};
+        updates[`/market_status/${name}/${item}`] = status;
+        update(ref(db), updates).catch((error) => alert("error: " + error.message));
+    };
+</script>
+</body>
+</html>
