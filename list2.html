@@ -53,8 +53,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 요청하신 인원 및 목록으로 변경
-    const alchemists = ["구요", "민채", "숭늉", "희수"];
+    // 인원 변경 
+    const alchemists = ["구요", "민채", "희수"];
     const seafoods = ["미역", "전복", "홍합"];
 
     const marketRef = ref(db, 'market_status');
@@ -67,7 +67,7 @@
         let html = `<table>
             <thead>
                 <tr>
-                    <th>연금술사</th>
+                    <th>요리사사</th>
                     ${seafoods.map(s => `<th>${s}</th>`).join('')}
                 </tr>
             </thead>
@@ -102,3 +102,4 @@
 </body>
 
 </html>
+
